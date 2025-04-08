@@ -126,6 +126,7 @@ if authentication_status:
         # LIME
         exp = explainer.explain_instance(input_scaled[0], model.predict, num_features=5)
         fig = exp.as_pyplot_figure()
+        fig.tight_layout()
         fig_path = "lime_explanation.png"
         fig.savefig(fig_path)
         st.image(fig_path, caption="LIME Explanation")
