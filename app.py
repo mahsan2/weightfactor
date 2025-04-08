@@ -9,7 +9,7 @@ import os
 from fpdf import FPDF
 import streamlit_authenticator as stauth
 
-# --- AUTH SETUP ---
+# ---------------- AUTH SETUP ----------------
 credentials = {
     "usernames": {
         "zahed1": {
@@ -32,7 +32,6 @@ if authentication_status:
     authenticator.logout("Logout", location="sidebar")
     st.title("Factor Weight Prediction with LIME Explanation")
 
-    # --- MODEL LOADING ---
     bundle = joblib.load("factor_weight_model.pkl")
     model = bundle["model"]
     scaler = bundle["scaler"]
@@ -46,26 +45,30 @@ if authentication_status:
         mode="regression"
     )
 
-    # --- INPUT FIELDS ---
-    inputs = {}
     input_labels = [
-        "A1 - Citations Per Publication", "A2 - Field Weighted Citation Impact", "A3 - Publications Cited in Top 5% of Journals (%)", "A4 - Publications Cited in Top 25% of Journals (%)",
-        "A5 - Research expenditures (in millions) ($)", "A6 - Research expenditures per faculty member ($)", "A7 - Peer assessment score", "A8 - Recruiter Assessment Score", "A9 - Doctoral degrees granted",
-        "A10 - Acceptance rate (doctoral) (%) - lower is better", "A11 - % of full-time tenured or tenure-track faculty who are elected members of the National Academy of Engineering (%)", "A12 - Doctoral student/faculty ratio"
+        "A1 - Citations Per Publication", "A2 - Field Weighted Citation Impact", "A3 - Publications Cited in Top 5% of Journals (%)",
+        "A4 - Publications Cited in Top 25% of Journals (%)", "A5 - Research expenditures (in millions) ($)",
+        "A6 - Research expenditures per faculty member ($)", "A7 - Peer assessment score",
+        "A8 - Recruiter Assessment Score", "A9 - Doctoral degrees granted",
+        "A10 - Acceptance rate (doctoral) (%) - lower is better",
+        "A11 - % of full-time tenured or tenure-track faculty in National Academy of Engineering (%)",
+        "A12 - Doctoral student/faculty ratio"
     ]
+
+    inputs = {}
     for i, label in enumerate(input_labels):
         key = f"A{i+1}"
         value = st.number_input(label=label, key=key, value=0.0)
         inputs[key] = value
 
-    if st.button("Predict and Explain"):
+    if st.button("Predict and Explain") or st.session_state.get("predicted", False):
+        st.session_state["predicted"] = True
         input_df = pd.DataFrame([inputs])
         input_df["A10"] = a10_max_value - input_df["A10"]
         input_scaled = scaler.transform(input_df)
         pred = model.predict(input_scaled)[0]
         st.success(f"Predicted Score: {round(pred)}")
 
-        # --- LIME ---
         exp = explainer.explain_instance(input_scaled[0], model.predict, num_features=12)
         fig = exp.as_pyplot_figure()
         fig.tight_layout()
@@ -73,52 +76,39 @@ if authentication_status:
         fig.savefig(fig_path)
         st.image(fig_path, caption="LIME Explanation")
 
-        st.markdown("**🟩 Green bars show positive contribution to the score. 🟥 Red bars show negative impact.**")
+        # Paragraph explanation for Streamlit
+        lime_paragraph = (
+            "**Interpretation:** The figure above shows the contribution of each factor using LIME. "
+            "Green bars indicate features that positively influenced the prediction, while red bars indicate "
+            "features that had a negative effect on the predicted score."
+        )
+        st.markdown(lime_paragraph)
 
-        # --- TEXT EXPLANATION ---
-        feature_map = {
-            "A1": "Citations Per Publication",
-            "A2": "Field Weighted Citation Impact",
-            "A3": "Publications Cited in Top 5% of Journals",
-            "A4": "Publications Cited in Top 25% of Journals",
-            "A5": "Research Expenditures (in millions)",
-            "A6": "Research Expenditures per Faculty (in thousands)",
-            "A7": "Peer Assessment Score",
-            "A8": "Recruiter Assessment Score",
-            "A9": "Doctoral Degrees Granted",
-            "A10": "Acceptance Rate (doctoral)",
-            "A11": "% Faculty in National Academy of Engineering",
-            "A12": "Doctoral Student/Faculty Ratio"
-        }
+        # Prepare top 5 explanations and top 3 suggestions
+        feature_map = {f"A{i+1}": label.split(" - ")[1] for i, label in enumerate(input_labels)}
+        top_5 = sorted(exp.as_list(), key=lambda x: abs(x[1]), reverse=True)[:5]
 
         explanation_lines = []
         suggestion_lines = []
 
-        explanation = ""
-        suggestion = ""
-
-        for i, (feature, impact) in enumerate(exp.as_list(), start=1):
+        for idx, (feature, impact) in enumerate(top_5, start=1):
             feat_code = feature.split()[0]
             readable = feature_map.get(feat_code, feat_code)
             direction = "increased" if impact > 0 else "decreased"
-            explanation += f"**{readable}** {direction} the predicted score.\n"
+            explanation_lines.append(f"{idx}. {readable} {direction} the predicted score.")
 
-            if impact > 0:
-                if abs(impact) > 5:
-                    suggestion += f"✅ Strong positive from **{readable}** → _Maintain or improve it._  \n"
-            else:
-                if abs(impact) > 5:
-                    suggestion += f"❗️ Strong negative from **{readable}** → _Focus on improving it._  \n"
-                else:
-                    suggestion += f"⚠️ Minor negative from **{readable}** → _Can be improved._  \n"
+            if impact < 0:
+                suggestion_lines.append(f"{idx}. Improve {readable}. It negatively impacted the score.")
 
-        st.markdown("### 🧠 Explanation")
-        st.markdown(explanation)
+        st.markdown("### 🔍 Explanation (Top 5 Features)")
+        for line in explanation_lines:
+            st.markdown(f"{line}")
 
-        st.markdown("### 📈 Suggestions for Improvement")
-        st.markdown(suggestion)
+        st.markdown("### 🧠 Suggestions for Improvement")
+        for line in suggestion_lines[:3]:
+            st.markdown(f"{line}")
 
-        # --- PDF REPORT ---
+        # ---------------- PDF REPORT ----------------
         class ReportPDF(FPDF):
             def header(self):
                 self.set_font("Arial", "B", 14)
@@ -139,13 +129,12 @@ if authentication_status:
             def add_table(self, data_dict):
                 self.set_font("Arial", "B", 9)
                 label_col_width = 160
-                value_col_width = 20
-                line_height = 8
-
+                value_col_width = 30
+                line_height = 6
                 self.cell(label_col_width, line_height, "Factor", border=1)
                 self.cell(value_col_width, line_height, "Input Value", border=1)
                 self.ln(line_height)
-                self.set_font("Arial", "", 9)
+                self.set_font("Arial", "", 8)
 
                 for k, v in data_dict.items():
                     full_label = input_labels[int(k[1:]) - 1]
@@ -156,11 +145,8 @@ if authentication_status:
                     self.multi_cell(value_col_width, line_height, str(v), border=1)
                     self.set_y(y_before + max(self.get_y() - y_before, line_height))
 
-            def add_paragraph(self, lines, bold=False):
-                if bold:
-                    self.set_font("Arial", "B", 11)
-                else:
-                    self.set_font("Arial", "", 11)
+            def add_paragraph(self, lines):
+                self.set_font("Arial", "", 11)
                 for line in lines:
                     self.multi_cell(0, 8, line)
                     self.ln(0.5)
@@ -172,28 +158,24 @@ if authentication_status:
         pdf.add_page()
         pdf.add_section("Input Values")
         pdf.add_table(inputs)
-
         pdf.ln(5)
         pdf.set_font("Arial", "B", 12)
         pdf.cell(0, 10, f"Predicted Score: {round(pred)}", ln=True)
 
         pdf.image(fig_path, w=160)
-        pdf.ln(3)
-
-        # LIME interpretation paragraph
-        pdf.add_paragraph([
+        pdf.ln(4)
+        pdf.set_font("Arial", "B", 10)
+        pdf.multi_cell(0, 8,
             "The figure above shows the contribution of each factor using LIME. "
             "Green bars indicate features that positively influenced the prediction, "
-            "while red bars indicate features that had a negative effect on the predicted score."
-        ], bold=True)
+            "while red bars indicate features that had a negative effect on the predicted score.")
+
+        pdf.add_section("Explanation (Top 5)")
+        pdf.add_paragraph([safe(line) for line in explanation_lines])
 
         pdf.ln(2)
-        pdf.add_section("Explanation (All Features)")
-        pdf.add_paragraph([safe(line) for line in explanation.strip().split("\n")])
-
-        pdf.ln(2)
-        pdf.add_section("Suggestions (Top 5 Only)")
-        pdf.add_paragraph([safe(line) for line in suggestion.strip().split("\n")])
+        pdf.add_section("Suggestions (Top 3)")
+        pdf.add_paragraph([safe(line) for line in suggestion_lines[:3]])
 
         report_path = "university_score_report.pdf"
         pdf.output(report_path)
