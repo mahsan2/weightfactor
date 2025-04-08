@@ -900,8 +900,8 @@ if authentication_status:
 
             def add_table(self, data_dict):
                 self.set_font("Arial", "B", 11)
-                label_col_width = 130
-                value_col_width = 50
+                label_col_width = 150
+                value_col_width = 30
                 line_height = 8
 
                 self.cell(label_col_width, line_height, "Factor", border=1)
