@@ -899,7 +899,7 @@ if authentication_status:
                 self.ln(2)
 
             def add_table(self, data_dict):
-                self.set_font("Arial", "B", 11)
+                self.set_font("Arial", "B", 9)
                 label_col_width = 150
                 value_col_width = 30
                 line_height = 8
