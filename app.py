@@ -820,9 +820,7 @@ if authentication_status:
     ]
     for i, label in enumerate(input_labels):
         key = f"A{i+1}"
-        #value = st.number_input(label, value=0.0)
         value = st.number_input(label=label, key=key, value=0.0)
-
         inputs[key] = value
 
     if st.button("Predict and Explain"):
@@ -888,8 +886,6 @@ if authentication_status:
                 self.set_font("Arial", "B", 14)
                 self.cell(0, 10, "University Factor Score Report", ln=True, align="C")
                 self.ln(3)
-                #self.set_draw_color(0, 0, 0)
-                #self.rect(10, 10, 190, 277)  # border for page
 
             def footer(self):
                 self.set_y(-15)
@@ -903,12 +899,23 @@ if authentication_status:
                 self.ln(2)
 
             def add_table(self, data_dict):
-                self.set_font("Arial", "", 11)
+                self.set_font("Arial", "B", 11)
                 col_width = 90
+                line_height = 8
+
+                self.cell(col_width, line_height, "Factor", border=1)
+                self.cell(col_width, line_height, "Input Value", border=1)
+                self.ln(line_height)
+                self.set_font("Arial", "", 11)
+
                 for k, v in data_dict.items():
                     full_label = input_labels[int(k[1:]) - 1]
-                    self.cell(col_width, 8, str(full_label), border=1)
-                    self.cell(col_width, 8, str(v), border=1, ln=True)
+                    x_before = self.get_x()
+                    y_before = self.get_y()
+                    self.multi_cell(col_width, line_height, str(full_label), border=1)
+                    self.set_xy(x_before + col_width, y_before)
+                    self.multi_cell(col_width, line_height, str(v), border=1)
+                    self.set_y(y_before + max(self.get_y() - y_before, line_height))
 
             def add_paragraph(self, lines):
                 self.set_font("Arial", "", 11)
@@ -928,13 +935,8 @@ if authentication_status:
         pdf.set_font("Arial", "B", 12)
         pdf.cell(0, 10, f"Predicted Score: {round(pred)}", ln=True)
 
-        # pdf.image(fig_path, w=180)
-        # pdf.ln(5)
         pdf.image(fig_path, w=160)
         pdf.ln(3)
-        pdf.set_font("Arial", "B", 10)
-        pdf.cell(0, 10, "Figure: University factor score report interpretation with LIME", ln=True, align="C")
-
 
         pdf.add_section("Explanation (All Features)")
         pdf.add_paragraph([safe(line) for line in explanation_lines])
@@ -953,5 +955,6 @@ elif authentication_status is False:
     st.error("Invalid username or password")
 elif authentication_status is None:
     st.warning("Please enter your credentials")
+
 
 
