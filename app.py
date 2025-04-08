@@ -270,6 +270,161 @@
 ###############
 ################
 #################
+# import streamlit as st
+# import pandas as pd
+# import numpy as np
+# import joblib
+# import lime
+# import lime.lime_tabular
+# import matplotlib.pyplot as plt
+# import os
+# from fpdf import FPDF
+# import streamlit_authenticator as stauth
+
+# # ---------------- AUTHENTICATION SETUP ----------------
+# credentials = {
+#     "usernames": {
+#         "zahed1": {
+#             "name": "Zahed",
+#             "password": "$2b$12$F7VEhfTFC24VcsUTOfBBm.oYnimMYxqIi9g1EVT6L/liSbqZPX3gu"
+#         }
+#     }
+# }
+
+# authenticator = stauth.Authenticate(
+#     credentials,
+#     cookie_name="auth_cookie",
+#     key="abcdef",
+#     cookie_expiry_days=1
+# )
+
+# name, authentication_status, username = authenticator.login("Login", location="main")
+
+# if authentication_status:
+#     authenticator.logout("Logout", location="sidebar")
+#     st.title("Factor Weight Prediction with LIME Explanation")
+
+#     # ---------------- LOAD MODEL ----------------
+#     bundle = joblib.load("factor_weight_model.pkl")
+#     model = bundle["model"]
+#     scaler = bundle["scaler"]
+#     a10_max_value = bundle["a10_max_value"]
+#     feature_names = bundle["feature_names"]
+#     X_train_scaled = bundle["X_train_scaled"]
+
+#     explainer = lime.lime_tabular.LimeTabularExplainer(
+#         training_data=X_train_scaled,
+#         feature_names=feature_names,
+#         mode="regression"
+#     )
+
+#     # ---------------- INPUT FIELDS ----------------
+#     inputs = {}
+#     input_labels = [
+#         "A1", "A2", "A3 (%)", "A4 (%)",
+#         "A5 ($)", "A6 ($)", "A7", "A8", "A9",
+#         "A10 (%) - lower is better", "A11 (%)", "A12"
+#     ]
+#     for i, label in enumerate(input_labels):
+#         key = f"A{i+1}"
+#         value = st.number_input(label, value=0.0)
+#         inputs[key] = value
+
+#     if st.button("Predict and Explain"):
+#         input_df = pd.DataFrame([inputs])
+#         input_df["A10"] = a10_max_value - input_df["A10"]
+#         input_scaled = scaler.transform(input_df)
+#         pred = model.predict(input_scaled)[0]
+#         st.success(f"Predicted Score: {round(pred)}")
+
+#         # ---------------- LIME ----------------
+#         exp = explainer.explain_instance(input_scaled[0], model.predict, num_features=12)
+#         fig = exp.as_pyplot_figure()
+#         fig.tight_layout()
+#         fig_path = "lime_explanation.png"
+#         fig.savefig(fig_path)
+#         st.image(fig_path, caption="LIME Explanation")
+
+#         # ---------------- EXPLANATION ----------------
+#         feature_map = {
+#             "A1": "Citations Per Publication",
+#             "A2": "Field Weighted Citation Impact",
+#             "A3": "Publications Cited in Top 5% of Journals",
+#             "A4": "Publications Cited in Top 25% of Journals",
+#             "A5": "Research Expenditures (in millions)",
+#             "A6": "Research Expenditures per Faculty (in thousands)",
+#             "A7": "Peer Assessment Score",
+#             "A8": "Recruiter Assessment Score",
+#             "A9": "Doctoral Degrees Granted",
+#             "A10": "Acceptance Rate (doctoral)",
+#             "A11": "% Faculty in National Academy of Engineering",
+#             "A12": "Doctoral Student/Faculty Ratio"
+#         }
+
+#         explanation = ""
+#         improvement = ""
+
+#         for feature, impact in exp.as_list():
+#             feat_code = feature.split()[0]
+#             readable = feature_map.get(feat_code, feat_code)
+#             direction = "increased" if impact > 0 else "decreased"
+#             explanation += f"🔹 **{readable}** {direction} the predicted score. (Impact: {impact:.2f})\n"
+
+#             if impact > 0:
+#                 if abs(impact) > 0.5:
+#                     improvement += f"✅ Maintain or enhance **{readable}**.\n"
+#             else:
+#                 if abs(impact) > 0.5:
+#                     improvement += f"🔴 Improve **{readable}**. It negatively impacted the score.\n"
+#                 else:
+#                     improvement += f"⚠️ **{readable}** had minor negative impact — optional to improve.\n"
+
+#         st.markdown("### 🧠 Explanation")
+#         st.markdown(explanation)
+
+#         st.markdown("### 📈 Suggestions for Improvement")
+#         st.markdown(improvement)
+
+#         # ---------------- REPORT PDF ----------------
+#         pdf = FPDF()
+#         pdf.add_page()
+#         pdf.set_font("Arial", size=12)
+#         pdf.cell(200, 10, txt="University Factor Score Report", ln=True, align="C")
+#         pdf.ln(10)
+
+#         pdf.cell(200, 10, txt="Input Values:", ln=True)
+#         for k, v in inputs.items():
+#             pdf.cell(200, 10, txt=f"{k}: {v}", ln=True)
+
+#         pdf.ln(10)
+#         pdf.cell(200, 10, txt=f"Predicted Score: {round(pred)}", ln=True)
+
+#         pdf.ln(10)
+#         pdf.cell(200, 10, txt="Explanation:", ln=True)
+#         for line in explanation.split("\n"):
+#             pdf.cell(200, 10, txt=line, ln=True)
+
+#         pdf.ln(10)
+#         pdf.cell(200, 10, txt="Suggestions:", ln=True)
+#         for line in improvement.split("\n"):
+#             pdf.cell(200, 10, txt=line, ln=True)
+
+#         pdf.image(fig_path, w=170)
+#         pdf_path = "full_report.pdf"
+#         pdf.output(pdf_path)
+
+#         with open(pdf_path, "rb") as f:
+#             st.download_button("📄 Download Full Report", f, file_name="report.pdf", mime="application/pdf")
+
+#         os.remove(fig_path)
+#         os.remove(pdf_path)
+
+# elif authentication_status is False:
+#     st.error("Invalid username or password")
+# elif authentication_status is None:
+#     st.warning("Please enter your credentials")
+
+####################
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -281,7 +436,7 @@ import os
 from fpdf import FPDF
 import streamlit_authenticator as stauth
 
-# ---------------- AUTHENTICATION SETUP ----------------
+# --------------- AUTH SETUP -------------------
 credentials = {
     "usernames": {
         "zahed1": {
@@ -304,7 +459,7 @@ if authentication_status:
     authenticator.logout("Logout", location="sidebar")
     st.title("Factor Weight Prediction with LIME Explanation")
 
-    # ---------------- LOAD MODEL ----------------
+    # --------------- MODEL LOADING -------------------
     bundle = joblib.load("factor_weight_model.pkl")
     model = bundle["model"]
     scaler = bundle["scaler"]
@@ -318,7 +473,7 @@ if authentication_status:
         mode="regression"
     )
 
-    # ---------------- INPUT FIELDS ----------------
+    # --------------- INPUT FIELDS -------------------
     inputs = {}
     input_labels = [
         "A1", "A2", "A3 (%)", "A4 (%)",
@@ -337,7 +492,7 @@ if authentication_status:
         pred = model.predict(input_scaled)[0]
         st.success(f"Predicted Score: {round(pred)}")
 
-        # ---------------- LIME ----------------
+        # --------------- LIME EXPLANATION -------------------
         exp = explainer.explain_instance(input_scaled[0], model.predict, num_features=12)
         fig = exp.as_pyplot_figure()
         fig.tight_layout()
@@ -345,7 +500,7 @@ if authentication_status:
         fig.savefig(fig_path)
         st.image(fig_path, caption="LIME Explanation")
 
-        # ---------------- EXPLANATION ----------------
+        # --------------- EXPLANATION + SUGGESTIONS -------------------
         feature_map = {
             "A1": "Citations Per Publication",
             "A2": "Field Weighted Citation Impact",
@@ -361,31 +516,36 @@ if authentication_status:
             "A12": "Doctoral Student/Faculty Ratio"
         }
 
-        explanation = ""
-        improvement = ""
+        explanation_lines = []
+        suggestion_lines = []
 
-        for feature, impact in exp.as_list():
+        for i, (feature, impact) in enumerate(exp.as_list(), start=1):
             feat_code = feature.split()[0]
             readable = feature_map.get(feat_code, feat_code)
             direction = "increased" if impact > 0 else "decreased"
-            explanation += f"🔹 **{readable}** {direction} the predicted score. (Impact: {impact:.2f})\n"
+            explanation_lines.append(f"{i}. {readable} {direction} the predicted score. (Impact: {impact:.2f})")
 
+        top_impacts = sorted(exp.as_list(), key=lambda x: abs(x[1]), reverse=True)[:5]
+        for i, (feature, impact) in enumerate(top_impacts, start=1):
+            feat_code = feature.split()[0]
+            readable = feature_map.get(feat_code, feat_code)
             if impact > 0:
-                if abs(impact) > 0.5:
-                    improvement += f"✅ Maintain or enhance **{readable}**.\n"
+                suggestion_lines.append(f"{i}. Maintain or enhance {readable}.")
             else:
-                if abs(impact) > 0.5:
-                    improvement += f"🔴 Improve **{readable}**. It negatively impacted the score.\n"
-                else:
-                    improvement += f"⚠️ **{readable}** had minor negative impact — optional to improve.\n"
+                suggestion_lines.append(f"{i}. Improve {readable}. It negatively impacted the score.")
 
-        st.markdown("### 🧠 Explanation")
-        st.markdown(explanation)
+        st.markdown("### Explanation")
+        for line in explanation_lines:
+            st.markdown(f"- {line}")
 
-        st.markdown("### 📈 Suggestions for Improvement")
-        st.markdown(improvement)
+        st.markdown("### Suggestions for Improvement (Top 5 impactful features)")
+        for line in suggestion_lines:
+            st.markdown(f"- {line}")
 
-        # ---------------- REPORT PDF ----------------
+        # --------------- PDF GENERATION -------------------
+        def clean_line(text):
+            return text.encode("latin-1", "replace").decode("latin-1")
+
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", size=12)
@@ -394,27 +554,27 @@ if authentication_status:
 
         pdf.cell(200, 10, txt="Input Values:", ln=True)
         for k, v in inputs.items():
-            pdf.cell(200, 10, txt=f"{k}: {v}", ln=True)
+            pdf.cell(200, 8, txt=clean_line(f"{k}: {v}"), ln=True)
 
-        pdf.ln(10)
+        pdf.ln(5)
         pdf.cell(200, 10, txt=f"Predicted Score: {round(pred)}", ln=True)
 
-        pdf.ln(10)
+        pdf.ln(5)
         pdf.cell(200, 10, txt="Explanation:", ln=True)
-        for line in explanation.split("\n"):
-            pdf.cell(200, 10, txt=line, ln=True)
+        for line in explanation_lines:
+            pdf.multi_cell(0, 8, clean_line(line))
 
-        pdf.ln(10)
-        pdf.cell(200, 10, txt="Suggestions:", ln=True)
-        for line in improvement.split("\n"):
-            pdf.cell(200, 10, txt=line, ln=True)
+        pdf.ln(3)
+        pdf.cell(200, 10, txt="Suggestions for Improvement (Top 5):", ln=True)
+        for line in suggestion_lines:
+            pdf.multi_cell(0, 8, clean_line(line))
 
         pdf.image(fig_path, w=170)
-        pdf_path = "full_report.pdf"
+        pdf_path = "report.pdf"
         pdf.output(pdf_path)
 
         with open(pdf_path, "rb") as f:
-            st.download_button("📄 Download Full Report", f, file_name="report.pdf", mime="application/pdf")
+            st.download_button("Download Full Report", f, file_name="report.pdf", mime="application/pdf")
 
         os.remove(fig_path)
         os.remove(pdf_path)
@@ -423,5 +583,6 @@ elif authentication_status is False:
     st.error("Invalid username or password")
 elif authentication_status is None:
     st.warning("Please enter your credentials")
+
 
 
