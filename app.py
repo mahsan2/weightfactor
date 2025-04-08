@@ -576,8 +576,8 @@ if authentication_status:
         with open(pdf_path, "rb") as f:
             st.download_button("Download Full Report", f, file_name="report.pdf", mime="application/pdf")
 
-        os.remove(fig_path)
-        os.remove(pdf_path)
+        # os.remove(fig_path)
+        # os.remove(pdf_path)
 
 elif authentication_status is False:
     st.error("Invalid username or password")
