@@ -51,7 +51,7 @@ if authentication_status:
     input_labels = [
         "A1 - Citations Per Publication", "A2 - Field Weighted Citation Impact", "A3 - Publications Cited in Top 5% of Journals (%)", "A4 - Publications Cited in Top 25% of Journals (%)",
         "A5 - Research expenditures (in millions) ($)", "A6 - Research expenditures per faculty member ($)", "A7 - Peer assessment score", "A8 - Recruiter Assessment Score", "A9 - Doctoral degrees granted",
-        "A10 - Acceptance rate (doctoral) (%) - lower is better", "A11 - % of full-time tenured or tenure-track faculty who are elected members of the National Academy of Engineering (%)", "A12 - Doctoral student/faculty ratio"
+        "A10 - Acceptance rate (doctoral) (%) - lower is better", "A11 - tenured/tenure-track faculty, elected members of the National Academy of Engineering (%)", "A12 - Doctoral student/faculty ratio"
     ]
     for i, label in enumerate(input_labels):
         key = f"A{i+1}"
