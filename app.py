@@ -888,8 +888,8 @@ if authentication_status:
                 self.set_font("Arial", "B", 14)
                 self.cell(0, 10, "University Factor Score Report", ln=True, align="C")
                 self.ln(3)
-                self.set_draw_color(0, 0, 0)
-                self.rect(10, 10, 190, 277)  # border for page
+                #self.set_draw_color(0, 0, 0)
+                #self.rect(10, 10, 190, 277)  # border for page
 
             def footer(self):
                 self.set_y(-15)
