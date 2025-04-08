@@ -3,8 +3,8 @@ streamlit-authenticator==0.2.3
 scikit-learn
 pandas
 numpy
-gradio
 lime
 matplotlib
 joblib
+bcrypt
 
