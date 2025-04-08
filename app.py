@@ -927,8 +927,13 @@ if authentication_status:
         pdf.set_font("Arial", "B", 12)
         pdf.cell(0, 10, f"Predicted Score: {round(pred)}", ln=True)
 
+        # pdf.image(fig_path, w=180)
+        # pdf.ln(5)
         pdf.image(fig_path, w=180)
-        pdf.ln(5)
+        pdf.ln(3)
+        pdf.set_font("Arial", "I", 10)
+        pdf.cell(0, 10, "Figure: University factor score report interpretation with LIME", ln=True, align="C")
+
 
         pdf.add_section("Explanation (All Features)")
         pdf.add_paragraph([safe(line) for line in explanation_lines])
