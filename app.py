@@ -774,7 +774,7 @@ import os
 from fpdf import FPDF
 import streamlit_authenticator as stauth
 
-# --------------- AUTH SETUP -------------------
+# --- AUTH SETUP ---
 credentials = {
     "usernames": {
         "zahed1": {
@@ -899,9 +899,9 @@ if authentication_status:
                 self.ln(2)
 
             def add_table(self, data_dict):
-                self.set_font("Arial", "B", 9)
-                label_col_width = 150
-                value_col_width = 30
+                self.set_font("Arial", "B", 11)
+                label_col_width = 140
+                value_col_width = 40
                 line_height = 8
 
                 self.cell(label_col_width, line_height, "Factor", border=1)
@@ -956,6 +956,7 @@ elif authentication_status is False:
     st.error("Invalid username or password")
 elif authentication_status is None:
     st.warning("Please enter your credentials")
+
 
 
 
