@@ -906,7 +906,8 @@ if authentication_status:
                 self.set_font("Arial", "", 11)
                 col_width = 90
                 for k, v in data_dict.items():
-                    self.cell(col_width, 8, str(k), border=1)
+                    full_label = input_labels[int(k[1:]) - 1]
+                    self.cell(col_width, 8, str(full_label), border=1)
                     self.cell(col_width, 8, str(v), border=1, ln=True)
 
             def add_paragraph(self, lines):
@@ -929,9 +930,9 @@ if authentication_status:
 
         # pdf.image(fig_path, w=180)
         # pdf.ln(5)
-        pdf.image(fig_path, w=180)
+        pdf.image(fig_path, w=160)
         pdf.ln(3)
-        pdf.set_font("Arial", "I", 10)
+        pdf.set_font("Arial", "B", 10)
         pdf.cell(0, 10, "Figure: University factor score report interpretation with LIME", ln=True, align="C")
 
 
