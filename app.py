@@ -62,24 +62,31 @@ import matplotlib.pyplot as plt
 import os
 import streamlit_authenticator as stauth
 
-# ---- Auth Setup ----
-names = ['Zahed']
-usernames = ['zahed1']
-hashed_passwords = ['$2b$12$F7VEhfTFC24VcsUTOfBBm.oYnimMYxqIi9g1EVT6L/liSbqZPX3gu']  # Replace with your generated hash
+# --- FIXED AUTH SECTION (compatible with streamlit-authenticator >=0.2.3) ---
 
+# Credentials dictionary
+credentials = {
+    "usernames": {
+        "zahed1": {
+            "name": "Zahed",
+            "password": "$2b$12$F7VEhfTFC24VcsUTOfBBm.oYnimMYxqIi9g1EVT6L/liSbqZPX3gu"  # hashed password for OUexplain834!
+        }
+    }
+}
+
+# Initialize authenticator (note the updated constructor format)
 authenticator = stauth.Authenticate(
-    names=names,
-    usernames=usernames,
-    passwords=hashed_passwords,
+    credentials,
     cookie_name="auth_cookie",
     key="abcdef",
     cookie_expiry_days=1
 )
 
-name, authentication_status, username = authenticator.login('Login', location='main')
+# --- LOGIN INTERFACE ---
+name, authentication_status, username = authenticator.login("Login", location="main")
 
 if authentication_status:
-    authenticator.logout('Logout', 'sidebar')
+    authenticator.logout("Logout", location="sidebar")
     st.title("Factor Weight Prediction with LIME Explanation")
 
     # Load model and data
@@ -122,9 +129,10 @@ if authentication_status:
         fig_path = "lime_explanation.png"
         fig.savefig(fig_path)
         st.image(fig_path, caption="LIME Explanation")
-        os.remove(fig_path)  # clean up
+        os.remove(fig_path)
 
 elif authentication_status is False:
     st.error("Invalid username or password")
 elif authentication_status is None:
     st.warning("Please enter your credentials")
+
