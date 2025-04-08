@@ -1,4 +1,3 @@
-#############################
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -74,7 +73,6 @@ if authentication_status:
         fig.savefig(fig_path)
         st.image(fig_path, caption="LIME Explanation")
 
-        # --- TEXT EXPLANATION ---
         feature_map = {
             "A1": "Citations Per Publication",
             "A2": "Field Weighted Citation Impact",
@@ -96,8 +94,7 @@ if authentication_status:
         for i, (feature, impact) in enumerate(exp.as_list(), start=1):
             feat_code = feature.split()[0]
             readable = feature_map.get(feat_code, feat_code)
-            direction = "increased" if impact > 0 else "decreased"
-            explanation_lines.append(f"{i}. {readable} {direction} the predicted score. (Impact: {impact:.2f})")
+            explanation_lines.append(f"{i}. {readable} contributed to the prediction.")
 
         top_impacts = sorted(exp.as_list(), key=lambda x: abs(x[1]), reverse=True)[:5]
         for i, (feature, impact) in enumerate(top_impacts, start=1):
@@ -135,29 +132,27 @@ if authentication_status:
                 self.ln(2)
 
             def add_table(self, data_dict):
-                self.set_font("Arial", "B", 5)
-                label_col_width = 160
-                value_col_width = 20
-                line_height = 8
-
+                self.set_font("Arial", "B", 9)
+                label_col_width = 150
+                value_col_width = 30
+                line_height = 7
                 self.cell(label_col_width, line_height, "Factor", border=1)
                 self.cell(value_col_width, line_height, "Input Value", border=1)
                 self.ln(line_height)
-                self.set_font("Arial", "", 11)
-
+                self.set_font("Arial", "", 9)
                 for k, v in data_dict.items():
                     full_label = input_labels[int(k[1:]) - 1]
-                    x_before = self.get_x()
-                    y_before = self.get_y()
-                    self.multi_cell(label_col_width, line_height, str(full_label), border=1)
-                    self.set_xy(x_before + label_col_width, y_before)
+                    x = self.get_x()
+                    y = self.get_y()
+                    self.multi_cell(label_col_width, line_height, full_label, border=1)
+                    self.set_xy(x + label_col_width, y)
                     self.multi_cell(value_col_width, line_height, str(v), border=1)
-                    self.set_y(y_before + max(self.get_y() - y_before, line_height))
+                    self.set_y(y + max(self.get_y() - y, line_height))
 
             def add_paragraph(self, lines):
-                self.set_font("Arial", "", 11)
+                self.set_font("Arial", "", 10)
                 for line in lines:
-                    self.multi_cell(0, 8, line)
+                    self.multi_cell(0, 7, line)
                     self.ln(0.5)
 
         def safe(text):
@@ -175,6 +170,12 @@ if authentication_status:
         pdf.image(fig_path, w=160)
         pdf.ln(3)
 
+        pdf.set_font("Arial", "I", 10)
+        pdf.multi_cell(0, 7, "The figure above shows the contribution of each factor using LIME. "
+                             "Green bars indicate features that positively influenced the prediction, "
+                             "while red bars indicate features that had a negative effect on the predicted score.")
+
+        pdf.ln(5)
         pdf.add_section("Explanation (All Features)")
         pdf.add_paragraph([safe(line) for line in explanation_lines])
 
@@ -192,8 +193,3 @@ elif authentication_status is False:
     st.error("Invalid username or password")
 elif authentication_status is None:
     st.warning("Please enter your credentials")
-
-
-
-
-
