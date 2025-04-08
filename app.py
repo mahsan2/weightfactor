@@ -820,7 +820,9 @@ if authentication_status:
     ]
     for i, label in enumerate(input_labels):
         key = f"A{i+1}"
-        value = st.number_input(label, value=0.0)
+        #value = st.number_input(label, value=0.0)
+        value = st.number_input(label=label, key=key, value=0.0)
+
         inputs[key] = value
 
     if st.button("Predict and Explain"):
