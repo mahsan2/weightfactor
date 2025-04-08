@@ -900,11 +900,12 @@ if authentication_status:
 
             def add_table(self, data_dict):
                 self.set_font("Arial", "B", 11)
-                col_width = 90
+                label_col_width = 130
+                value_col_width = 50   
                 line_height = 8
 
-                self.cell(col_width, line_height, "Factor", border=1)
-                self.cell(col_width, line_height, "Input Value", border=1)
+                self.cell(label_col_width, line_height, "Factor", border=1)
+                self.cell(value_col_width, line_height, "Input Value", border=1)
                 self.ln(line_height)
                 self.set_font("Arial", "", 11)
 
@@ -912,10 +913,10 @@ if authentication_status:
                     full_label = input_labels[int(k[1:]) - 1]
                     x_before = self.get_x()
                     y_before = self.get_y()
-                    self.multi_cell(col_width, line_height, str(full_label), border=1)
-                    self.set_xy(x_before + col_width, y_before)
-                    self.multi_cell(col_width, line_height, str(v), border=1)
-                    self.set_y(y_before + max(self.get_y() - y_before, line_height))
+                    self.multi_cell(label_col_width, line_height, str(full_label), border=1)
+                    self.set_xy(x_before + label_col_width, y_before)
+                     self.multi_cell(value_col_width, line_height, str(v), border=1)
+                     self.set_y(y_before + max(self.get_y() - y_before, line_height))
 
             def add_paragraph(self, lines):
                 self.set_font("Arial", "", 11)
